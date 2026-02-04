@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Accordion Slider Xe</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .slider-container {
+      width: 100%;
+      max-width: 1200px;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+    .now-showing {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: #9fff6b;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 10;
+    }
+    .now-showing::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      background: #9fff6b;
+      border-radius: 50%;
+    }
+    .accordion-slider {
+      display: flex;
+      height: 100%;
+      position: relative;
+    }
+    .slide {
+      flex: 1;
+      position: relative;
+      cursor: pointer;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      transition: all 0.8s cubic-bezier(0.4,0,0.2,1);
+      overflow: hidden;
+      filter: grayscale(1);
+    }
+    .slide:hover {
+      filter: grayscale(0);
+    }
+    .slide.active {
+      flex: 2.5;
+      filter: grayscale(0);
+    }
+    .slide::before {
+      content: "";
+      position: absolute;
+      top:0; left:0; right:0; bottom:0;
+      background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.8) 80%);
+    }
+    .slide-content {
+      position: absolute;
+      bottom: 30px;
+      left: 30px;
+      right: 30px;
+      color: white;
+      z-index: 2;
+    }
+    .slide.active .slide-content {
+      bottom: 80px;
+      transition: all 0.8s cubic-bezier(0.4,0,0.2,1) 0.2s;
+    }
+    .slide-number {
+      font-size: 64px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.6);
+      line-height:1;
+      position: absolute;
+      bottom: 30px;
+      left: 30px;
+      transition: all 0.8s cubic-bezier(0.4,0,0.2,1);
+    }
+    .slide.active .slide-number {
+      bottom: auto;
+      top: -50px;
+      font-size: 48px;
+      left: 0;
+    }
+    .car-brand {
+      font-size: 16px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 5px;
+      transform: rotate(-90deg);
+      transform-origin: left bottom;
+      position: absolute;
+      bottom: 100px;
+      left: 30px;
+      white-space: nowrap;
+      transition: all 0.8s cubic-bezier(0.4,0,0.2,1);
+    }
+    .slide.active .car-brand {
+      transform: rotate(0deg);
+      position: static;
+      transform-origin: unset;
+    }
+    .car-name {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s cubic-bezier(0.4,0,0.2,1);
+      transition-delay: 0s;
+    }
+    .slide.active .car-name {
+      opacity:1;
+      transform: translateY(0);
+      transition-delay: 0.3s;
+    }
+    .car-subtitle {
+      font-size: 16px;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 20px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s cubic-bezier(0.4,0,0.2,1);
+      transition-delay: 0s;
+    }
+    .slide.active .car-subtitle {
+      opacity:1;
+      transform: translateY(0);
+      transition-delay: 0.4s;
+    }
+    .car-specs {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s cubic-bezier(0.4,0,0.2,1);
+      transition-delay: 0s;
+    }
+    .slide.active .car-specs {
+      opacity:1;
+      transform: translateY(0);
+      transition-delay: 0.5s;
+    }
+    .spec-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 14px;
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+    .slide.active .spec-row {
+      opacity:1;
+      transform: translateX(0);
+    }
+    .slide.active .spec-row:nth-child(1) {
+      transition-delay: 0.6s;
+    }
+    .slide.active .spec-row:nth-child(2) {
+      transition-delay: 0.65s;
+    }
+    .slide.active .spec-row:nth-child(3) {
+      transition-delay: 0.7s;
+    }
+    .slide.active .spec-row:nth-child(4) {
+      transition-delay: 0.75s;
+    }
+    .spec-label {
+      color: rgba(255,255,255,0.7);
+    }
+    .spec-value {
+      color: white;
+      font-weight: 600;
+    }
+    .performance-badges {
+      display: flex;
+      gap: 12px;
+      margin-top: 15px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s cubic-bezier(0.4,0,0.2,1);
+      transition-delay: 0s;
+    }
+    .slide.active .performance-badges {
+      opacity:1;
+      transform: translateY(0);
+      transition-delay: 0.8s;
+    }
+    .badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .slide.active .badge {
+      opacity:1;
+      transform: scale(1);
+    }
+    .slide.active .badge:nth-child(1) {
+      transition-delay: 0.85s;
+    }
+    .slide.active .badge:nth-child(2) {
+      transition-delay: 0.9s;
+    }
+    .slide.active .badge:nth-child(3) {
+      transition-delay: 0.95s;
+    }
+    .badge-icon {
+      width: 8px;
+      height: 8px;
+      background: #9fff6b;
+      border-radius: 50%;
+    }
+    .add-button {
+      position: absolute;
+      bottom: 30px;
+      right: 30px;
+      width: 32px;
+      height: 32px;
+      background: transparent;
+      border: 2px solid #9fff6b;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      z-index: 3;
+    }
+    .add-button::before,
+    .add-button::after {
+      content: "";
+      position: absolute;
+      background: #9fff6b;
+      transition: all 0.4s ease;
+    }
+    .add-button::before {
+      width: 12px;
+      height: 2px;
+    }
+    .add-button::after {
+      width: 2px;
+      height: 12px;
+      transform: rotate(0deg);
+    }
+    .slide.active .add-button::before {
+      transform: rotate(0deg);
+    }
+    .slide.active .add-button::after {
+      opacity: 0;
+      transform: scale(0);
+    }
+    .navigation-arrows {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 50px;
+      height: 50px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      cursor: pointer;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      z-index: 4;
+      backdrop-filter: blur(10px);
+    }
+    .nav-prev {
+      left: 20px;
+    }
+    .nav-next {
+      right: 20px;
+    }
+    .navigation-arrows:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    @media (max-width: 768px) {
+      .accordion-slider {
+        flex-direction: column;
+      }
+      .slide {
+        flex: 1;
+        min-height: 80px;
+      }
+      .slide.active {
+        flex: 2;
+      }
+      .slide-number {
+        font-size: 32px;
+      }
+      .car-brand {
+        transform: none;
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="slider-container">
+    <div class="now-showing">Now in Showroom</div>
+    <div class="accordion-slider">
+      <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1544636331-e26879cd4d9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1974&q=80')">
+        <div class="slide-content">
+          <div class="slide-number">01</div>
+          <div class="car-brand">Bugatti</div>
+          <div class="car-name">Bugatti Chiron</div>
+          <div class="car-subtitle">Naturally Aspirated W16 Excellence</div>
+          <div class="car-specs">
+            <div class="spec-row"><span class="spec-label">Engine:</span> <span class="spec-value">W16 8.0L</span></div>
+            <div class="spec-row"><span class="spec-label">Power:</span> <span class="spec-value">1.521 / 6.700 HP</span></div>
+            <div class="spec-row"><span class="spec-label">Torque:</span> <span class="spec-value">1.600 / 1.200 – 6.000 Nm</span></div>
+            <div class="spec-row"><span class="spec-label">Transmission:</span> <span class="spec-value">7-speed DSG dual-clutch automatic.</span></div>
+          </div>
+          <div class="performance-badges">
+            <div class="badge"><div class="badge-icon"></div><span>0-100: 2,5s</span></div>
+            <div class="badge"><div class="badge-icon"></div><span>Top Speed: 420 km/h</span></div>
+            <div class="badge"><div class="badge-icon"></div><span>Price: $2,9-3,7 million</span></div>
+          </div>
+        </div>
+        <div class="add-button"></div>
+      </div>
+      <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')">
+        <div class="slide-content">
+          <div class="slide-number">02</div>
+          <div class="car-brand">Chevrolet</div>
+          <div class="car-name">Chevrolet Camaro ZL1 1LE</div>
+          <div class="car-subtitle">Supercharged 6.2L V8 engine (LT4)</div>
+          <div class="car-specs">
+            <div class="spec-row"><span class="spec-label">Engine:</span> <span class="spec-value">V8 6,2L</span></div>
+            <div class="spec-row"><span class="spec-label">Power:</span> <span class="spec-value">659 HP</span></div>
+            <div class="spec-row"><span class="spec-label">Torque:</span> <span class="spec-value">881 Nm</span></div>
+            <div class="spec-row"><span class="spec-label">Transmission:</span> <span class="spec-value">10-speed automatic</span></div>
+          </div>
+          <div class="performance-badges">
+            <div class="badge"><div class="badge-icon"></div><span>0-100: 2.1s</span></div>
+            <div class="badge"><div class="badge-icon"></div><span>Top Speed: 350 km/h</span></div>
+            <div class="badge"><div class="badge-icon"></div><span>Price: ~ $73.695</span></div>
+          </div>
+        </div>
+        <div class="add-button"></div>
+      </div>
+      <div class="slide" style="background-image: url('https://cdn.dicklovett.co.uk/uploads/used_stock_image/1_2361341_e.jpg?v=1751299637')">
+      <div class="slide-content">
+      <div class="slide-number">03</div>
+          <div class="car-brand">Porsche</div>
+          <div class="car-name">Porsche Panamera 2025</div>
+          <div class="car-subtitle">2.9L twin turbocharged V6 gasoline</div>
+          <div class="car-specs">
+          <div class="spec-row"><span class="spec-label">Engine:</span> <span class="spec-value">V6 2.9L</span></div>
+            <div class="spec-row"><span class="spec-label">Power:</span> <span class="spec-value">353 HP</span></div>
+            <div class="spec-row"><span class="spec-label">Torque:</span> <span class="spec-value">500 Nm</span></div>
+            <div class="spec-row"><span class="spec-label">Transmission:</span> <span class="spec-value">8-speed (PDK) dual-clutch automatic</span></div>
+          </div>
+          <div class="performance-badges">
+            <div class="badge"><div class="badge-icon"></div><span>0-100: 5,1s</span></div>
+            <div class="badge"><div class="badge-icon"></div><span>Top Speed: 270-315 km/h</span></div>
+            <div class="badge"><div class="badge-icon"></div><span>Price: ~$110,000</span></div>
+          </div>
+          </div>
+        <div class="add-button"></div>
+      </div>
+      <div class="slide" style="background-image: url('https://cdn.bmwblog.com/wp-content/uploads/2021/06/bmw_3_series_i3_facelift_00.jpg')">
+        <div class="slide-content">
+          <div class="slide-number">04</div>
+          <div class="car-brand">BMW</div>
+          <div class="car-name">BMW 3 Series 2025</div>
+          <div class="car-subtitle">2.0L TwinPower Turbo</div>
+          <div class="car-specs">
+            <div class="spec-row"><span class="spec-label">Engine:</span> <span class="spec-value">B48 Twin PowerTurbo i4</span></div>
+            <div class="spec-row"><span class="spec-label">Power:</span> <span class="spec-value">258 HP</span></div>
+            <div class="spec-row"><span class="spec-label">Torque:</span> <span class="spec-value">400 Nm</span></div>
+            <div class="spec-row"><span class="spec-label">Transmission:</span> <span class="spec-value">Automatic 8-level Steptronic Sport</span></div>
+          </div>
+          <div class="performance-badges">
+            <div class="badge"><div class="badge-icon"></div><span>0-100: 5,9s</span></div>
+            <div class="badge"><div class="badge-icon"></div><span>Top Speed: 250 km/h</span></div>
+            <div class="badge"><div class="badge-icon"></div><span>Price: ~$47,125</span></div>
+          </div>
+          </div>
+        <div class="add-button"></div>
+      </div>
+      <div class="slide" style="background-image: url('https://dailymuabanxe.net/wp-content/uploads/2022/08/Koenigsegg-Jesko-8.jpg')">
+        <div class="slide-content">
+          <div class="slide-number">05</div>
+          <div class="car-brand">Koenigsegg</div>
+          <div class="car-name">Koenigsegg Jesko</div>
+          <div class="car-subtitle">V8 5.0 liter capacity, twin turbocharger</div>
+          <div class="car-specs">
+            <div class="spec-row"><span class="spec-label">Engine:</span> <span class="spec-value">V8 5.0L</span></div>
+            <div class="spec-row"><span class="spec-label">Power:</span> <span class="spec-value">1280-1600 HP</span></div>
+            <div class="spec-row"><span class="spec-label">Torque:</span> <span class="spec-value">1000-1500 Nm</span></div>
+            <div class="spec-row"><span class="spec-label">Transmission:</span> <span class="spec-value">9-speed Koenigsegg Light Speed</span></div>
+          </div>
+          <div class="performance-badges">
+            <div class="badge"><div class="badge-icon"></div><span>0-100: 2,5-2,6s</span></div>
+            <div class="badge"><div class="badge-icon"></div><span>Top Speed: 500 km/h</span></div>
+            <div class="badge"><div class="badge-icon"></div><span>Price: ~$3 million</span></div>
+          </div>
+          </div>
+        <div class="add-button"></div>
+      </div>
+      <div class="slide" style="background-image: url('https://hips.hearstapps.com/hmg-prod/images/img-3743-1508866403.jpg?crop=1.00xw:1.00xh;0,0&resize=1200:*')">
+        <div class="slide-content">
+          <div class="slide-number">06</div>
+          <div class="car-brand">Apollo</div>
+          <div class="car-name">Apollo IE</div>
+          <div class="car-subtitle">6.3L of natural gas intake</div>
+          <div class="car-specs">
+            <div class="spec-row"><span class="spec-label">Engine:</span> <span class="spec-value">V12 6.3L</span></div>
+            <div class="spec-row"><span class="spec-label">Power:</span> <span class="spec-value">769 HP</span></div>
+            <div class="spec-row"><span class="spec-label">Torque:</span> <span class="spec-value">760 Nm</span></div>
+            <div class="spec-row"><span class="spec-label">Transmission:</span> <span class="spec-value">Hewland 6-speed sequential manual</span></div>
+          </div>
+          <div class="performance-badges">
+            <div class="badge"><div class="badge-icon"></div><span>0-100: 2,7s</span></div>
+            <div class="badge"><div class="badge-icon"></div><span>Top Speed: 335 km/h</span></div>
+            <div class="badge"><div class="badge-icon"></div><span>Price: ~$2,67 million</span></div>
+          </div>
+          </div>
+        <div class="add-button"></div>
+      </div>
+      <div class="slide" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Geneva_MotorShow_2013_-_Lamborghini_Veneno_1.jpg/1200px-Geneva_MotorShow_2013_-_Lamborghini_Veneno_1.jpg')">
+        <div class="slide-content">
+          <div class="slide-number">07</div>
+          <div class="car-brand">Lamborghini</div>
+          <div class="car-name">Lamborghini Veneno Roadster</div>
+          <div class="car-subtitle">6.5L naturally aspirated V12 engine</div>
+          <div class="car-specs">
+            <div class="spec-row"><span class="spec-label">Engine:</span> <span class="spec-value">V12 6.5L</span></div>
+            <div class="spec-row"><span class="spec-label">Power:</span> <span class="spec-value">750 HP</span></div>
+            <div class="spec-row"><span class="spec-label">Torque:</span> <span class="spec-value">507 Nm</span></div>
+            <div class="spec-row"><span class="spec-label">Transmission:</span> <span class="spec-value">7-speed ISR automated manual </span></div>
+          </div>
+          <div class="performance-badges">
+            <div class="badge"><div class="badge-icon"></div><span>0-100: 2,9s</span></div>
+            <div class="badge"><div class="badge-icon"></div><span>Top Speed: 355 km/h</span></div>
+            <div class="badge"><div class="badge-icon"></div><span>Price: ~$4 million</span></div>
+          </div>
+          </div>
+        <div class="add-button"></div>
+      </div>
+      <div class="slide" style="background-image: url('https://news.dupontregistry.com/wp-content/uploads/2022/01/5d94da3ad6f4125e09942efa-ferrari-laferrari-2013-engine-focuson-desktop-01-scaled.jpeg')">
+        <div class="slide-content">
+          <div class="slide-number">08</div>
+          <div class="car-brand">Ferrari</div>
+          <div class="car-name">Ferrari LaFerrari 2024</div>
+          <div class="car-subtitle">6.3L V12 gasoline with an electric motor</div>
+          <div class="car-specs">
+            <div class="spec-row"><span class="spec-label">Engine:</span> <span class="spec-value">V12 6.3L</span></div>
+            <div class="spec-row"><span class="spec-label">Power:</span> <span class="spec-value">950 HP</span></div>
+            <div class="spec-row"><span class="spec-label">Torque:</span> <span class="spec-value">899 Nm</span></div>
+            <div class="spec-row"><span class="spec-label">Transmission:</span> <span class="spec-value">7-speed dual-clutch </span></div>
+          </div>
+          <div class="performance-badges">
+            <div class="badge"><div class="badge-icon"></div><span>0-100: 2,6s</span></div>
+            <div class="badge"><div class="badge-icon"></div><span>Top Speed: 350 km/h</span></div>
+            <div class="badge"><div class="badge-icon"></div><span>Price: ~$1,4 million</span></div>
+          </div>
+           </div>
+        <div class="add-button"></div>
+        </div>
+    </div>
+    <button class="navigation-arrows nav-prev">‹</button>
+    <button class="navigation-arrows nav-next">›</button>
+  </div>
+
+  <script>
+    class AccordionSlider {
+      constructor(){
+        this.slides = document.querySelectorAll(".slide");
+        this.prevBtn = document.querySelector(".nav-prev");
+        this.nextBtn = document.querySelector(".nav-next");
+        this.currentIndex = -1;
+        this.init();
+      }
+      init(){
+        this.slides.forEach((slide, index) => {
+          slide.addEventListener("click", () => this.setActiveSlide(index));
+        });
+        this.prevBtn.addEventListener("click", () => this.previousSlide());
+        this.nextBtn.addEventListener("click", () => this.nextSlide());
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "ArrowLeft") this.previousSlide();
+          if (e.key === "ArrowRight") this.nextSlide();
+        });
+      }
+      setActiveSlide(index){
+        if (this.currentIndex === index) {
+          this.slides.forEach(s => s.classList.remove("active"));
+          this.currentIndex = -1;
+        } else {
+          this.slides.forEach(s => s.classList.remove("active"));
+          this.slides[index].classList.add("active");
+          this.currentIndex = index;
+        }
+      }
+      nextSlide(){
+        const nextIndex = this.currentIndex === -1 ? 0 : (this.currentIndex + 1) % this.slides.length;
+        this.setActiveSlide(nextIndex);
+      }
+      previousSlide(){
+        const prevIndex = this.currentIndex === -1
+          ? this.slides.length - 1
+          : (this.currentIndex - 1 + this.slides.length) % this.slides.length;
+        this.setActiveSlide(prevIndex);
+      }
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+      new AccordionSlider();
+    });
+  </script>
+</body>
+</html>
